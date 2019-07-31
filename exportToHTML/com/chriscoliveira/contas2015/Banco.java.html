@@ -1,0 +1,1281 @@
+<html>
+<head>
+<title>Banco.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(0,0,128); font-weight: bold; }
+.s1 { color: rgb(0,0,0); }
+.s2 { color: rgb(128,128,128); font-style: italic; }
+.s3 { color: rgb(0,128,0); font-weight: bold; }
+.s4 { color: rgb(0,0,255); }
+</style>
+</head>
+<BODY BGCOLOR="#ffffff">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+Banco.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+<span class="s0">package </span><span class="s1">com.chriscoliveira.contas2015; 
+ 
+</span><span class="s2">/* 
+ * 05-11-15 personalizado o resumo da tela inicial   
+ * 08-11-15 modificacao na tela de cadastro/ alteração do registro para limpar o campo parcela quando clicado  
+ * 20/11/15 corrigido a opcao de cadastrar parcela e valores vazios, caso ocorra sera colocado o valor 1 para ambos os campos 
+ * 20/11/15 adicionado codigo a pagina de configuração para exibir a data de compilacao da versao. 
+ * 20/11/15 exibe os regs baseado em 2 campos situacao e conta 
+ * 04/12/15 adicionado a opcao de exibir o resumo de contas até o dia 20 e depois do dia 20 (pagto e vale) 
+ * 04/12/15 ordenado a exibição das contas por dia e situacao para melhor visualizacao. 
+ * 12/01/17 feito ajustes de no codigo para a coloração dos menus. 
+ * 12/01/17 alterado no menu inicial os valores a serem pagos ate o dia 20 e depois do mesmo para serem subtraidos do valor que ja foi pago 
+ * 12/01/17 modificado na tela ajustes a informação da data de compilação e adicionado na tela inicial 
+ * 12/01/17 
+ * 12/01/17 
+ * 12/01/17 
+ * 12/01/17 
+ */</span><span class="s1"> 
+ 
+</span><span class="s0">import </span><span class="s1">java.io.BufferedReader; 
+</span><span class="s0">import </span><span class="s1">java.io.File; 
+</span><span class="s0">import </span><span class="s1">java.io.FileOutputStream; 
+</span><span class="s0">import </span><span class="s1">java.io.FileReader; 
+</span><span class="s0">import </span><span class="s1">java.io.IOException; 
+</span><span class="s0">import </span><span class="s1">java.util.Calendar; 
+</span><span class="s0">import </span><span class="s1">java.util.Locale; 
+ 
+</span><span class="s0">import </span><span class="s1">android.app.Activity; 
+</span><span class="s0">import </span><span class="s1">android.app.AlertDialog; 
+</span><span class="s0">import </span><span class="s1">android.app.Dialog; 
+</span><span class="s0">import </span><span class="s1">android.content.ContentValues; 
+</span><span class="s0">import </span><span class="s1">android.content.Context; 
+</span><span class="s0">import </span><span class="s1">android.content.DialogInterface; 
+</span><span class="s0">import </span><span class="s1">android.content.Intent; 
+</span><span class="s0">import </span><span class="s1">android.database.Cursor; 
+</span><span class="s0">import </span><span class="s1">android.database.sqlite.SQLiteDatabase; 
+</span><span class="s0">import </span><span class="s1">android.net.Uri; 
+</span><span class="s0">import </span><span class="s1">android.os.Environment; 
+</span><span class="s0">import </span><span class="s1">android.support.v4.widget.SimpleCursorAdapter; 
+</span><span class="s0">import </span><span class="s1">android.view.View; 
+</span><span class="s0">import </span><span class="s1">android.view.View.OnClickListener; 
+</span><span class="s0">import </span><span class="s1">android.view.inputmethod.InputMethodManager; 
+</span><span class="s0">import </span><span class="s1">android.widget.Button; 
+</span><span class="s0">import </span><span class="s1">android.widget.CheckBox; 
+</span><span class="s0">import </span><span class="s1">android.widget.EditText; 
+</span><span class="s0">import </span><span class="s1">android.widget.ListView; 
+</span><span class="s0">import </span><span class="s1">android.widget.Spinner; 
+</span><span class="s0">import </span><span class="s1">android.widget.TextView; 
+</span><span class="s0">import </span><span class="s1">android.widget.Toast; 
+ 
+</span><span class="s0">public class </span><span class="s1">Banco </span><span class="s0">extends </span><span class="s1">Activity { 
+ 
+    </span><span class="s0">protected </span><span class="s1">SQLiteDatabase bancoDados = </span><span class="s0">null</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String NOME_BANCO = </span><span class="s3">&quot;MinhasContas2014&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String NOME_TABELA_CONTAS = </span><span class="s3">&quot;Contas&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String ID = </span><span class="s3">&quot;_id&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String CONTA = </span><span class="s3">&quot;conta&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String VALOR = </span><span class="s3">&quot;valor&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String ANO = </span><span class="s3">&quot;ano&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String MES = </span><span class="s3">&quot;mes&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String DIA = </span><span class="s3">&quot;dia&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String PARCELA = </span><span class="s3">&quot;parcela&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String SITUACAO = </span><span class="s3">&quot;situacao&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String TIPO = </span><span class="s3">&quot;tipo&quot;</span><span class="s1">; 
+    </span><span class="s0">public static </span><span class="s1">String CATEGORIA = </span><span class="s3">&quot;categoria&quot;</span><span class="s1">; 
+ 
+    ListView MostraDados; 
+    SimpleCursorAdapter adapterLista; 
+    Cursor cursor; 
+    String Pago, Valores = </span><span class="s3">&quot;&quot;</span><span class="s1">; 
+    Dialog dialog; 
+    CheckBox cbSituacao; 
+    Button btAcaoDialog, btAcaoApagar; 
+    String txtcb; 
+ 
+ 
+    </span><span class="s0">int </span><span class="s1">diA = RetornaDia(); 
+    </span><span class="s0">int </span><span class="s1">meS = RetornaMes(); 
+    </span><span class="s0">int </span><span class="s1">anO = RetornaAno(); 
+ 
+    </span><span class="s2">/* 
+     * 
+     * TODO cria o banco de dados 
+     *  
+     */</span><span class="s1"> 
+ 
+    SQL sqlClass = </span><span class="s0">new </span><span class="s1">SQL(); 
+ 
+    </span><span class="s0">public void </span><span class="s1">AbreCriaBanco(Activity activity) { 
+ 
+ 
+ 
+        </span><span class="s2">// uso do context devido a classe ser simples e nao poder</span><span class="s1"> 
+        </span><span class="s2">// executar o comando em outra classe</span><span class="s1"> 
+        bancoDados = activity.openOrCreateDatabase(NOME_BANCO, Context.MODE_PRIVATE, </span><span class="s0">null</span><span class="s1">); 
+        bancoDados.execSQL(sqlClass.criaTabela); 
+ 
+        bancoDados.close(); 
+ 
+    } 
+ 
+    </span><span class="s2">/* 
+     * 
+     * TODO abre a conexao com o banco 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">AbreBanco(Activity activity) { 
+        bancoDados = activity.openOrCreateDatabase(NOME_BANCO, Context.MODE_PRIVATE, </span><span class="s0">null</span><span class="s1">); 
+    } 
+ 
+    </span><span class="s2">/* 
+     * 
+     * TODO Fecha a conexao com o banco 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">FechaBanco() { 
+        bancoDados.close(); 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * TODO cadastro de novos registros 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">cadastarNovo(</span><span class="s0">final </span><span class="s1">Activity activity, String conta, String valor, String parcela, String dia, 
+                             String mes, String ano, String tipo, String categoria) { 
+        AbreBanco(activity); 
+ 
+        </span><span class="s0">if </span><span class="s1">(parcela.equals(</span><span class="s3">&quot;&quot;</span><span class="s1">)) 
+            parcela = </span><span class="s3">&quot;1&quot;</span><span class="s1">; 
+        </span><span class="s0">if </span><span class="s1">(parcela.equals(</span><span class="s3">&quot;0&quot;</span><span class="s1">)) 
+            parcela = </span><span class="s3">&quot;1&quot;</span><span class="s1">; 
+        </span><span class="s0">if </span><span class="s1">(valor.equals(</span><span class="s3">&quot;&quot;</span><span class="s1">)) 
+            valor = </span><span class="s3">&quot;1&quot;</span><span class="s1">; 
+        </span><span class="s0">if </span><span class="s1">(valor.equals(</span><span class="s3">&quot;0&quot;</span><span class="s1">)) 
+            valor = </span><span class="s3">&quot;1&quot;</span><span class="s1">; 
+ 
+        ContentValues contentValuesCampos = </span><span class="s0">new </span><span class="s1">ContentValues(); 
+        Integer Parcela = Integer.parseInt(parcela), Mes = Integer.parseInt(mes), Ano = Integer.parseInt(ano); 
+        String parcelas = </span><span class="s3">&quot;&quot;</span><span class="s1">; 
+ 
+        </span><span class="s0">int </span><span class="s1">anual = Ano, mensal = Mes; 
+        </span><span class="s0">for </span><span class="s1">(</span><span class="s0">int </span><span class="s1">i = </span><span class="s4">0</span><span class="s1">; i &lt; Parcela; i++) { 
+            </span><span class="s0">int </span><span class="s1">numeroParcela = i + </span><span class="s4">1</span><span class="s1">; 
+            parcelas = </span><span class="s3">&quot;Parcela &quot; </span><span class="s1">+ numeroParcela + </span><span class="s3">&quot;-&quot; </span><span class="s1">+ parcela; 
+            </span><span class="s0">if </span><span class="s1">(i != </span><span class="s4">0</span><span class="s1">) { 
+                </span><span class="s0">if </span><span class="s1">(mensal == </span><span class="s4">0</span><span class="s1">) { 
+                    mensal = Mes + numeroParcela - </span><span class="s4">1</span><span class="s1">; 
+                    anual = Ano; 
+                } </span><span class="s0">else</span><span class="s1"> 
+                    mensal++; 
+            } 
+            </span><span class="s0">if </span><span class="s1">(mensal == </span><span class="s4">13</span><span class="s1">) { 
+                mensal = </span><span class="s4">1</span><span class="s1">; 
+                anual++; 
+            } 
+ 
+            contentValuesCampos.put(CONTA, conta); 
+            contentValuesCampos.put(VALOR, valor); 
+            contentValuesCampos.put(PARCELA, parcelas); 
+            contentValuesCampos.put(ANO, anual); 
+            contentValuesCampos.put(DIA, dia); 
+            contentValuesCampos.put(MES, mensal); 
+            contentValuesCampos.put(TIPO, tipo); 
+            contentValuesCampos.put(CATEGORIA, categoria); 
+            contentValuesCampos.put(SITUACAO, </span><span class="s3">&quot;_&quot;</span><span class="s1">); 
+ 
+            </span><span class="s0">try </span><span class="s1">{ 
+                bancoDados.insert(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, contentValuesCampos); 
+                Toast.makeText(activity, </span><span class="s3">&quot;Cadastro realizado com sucesso!&quot;</span><span class="s1">, Toast.LENGTH_SHORT).show(); 
+            } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+                Toast.makeText(activity, </span><span class="s3">&quot;Erro ao efetuar o cadastro: &quot; </span><span class="s1">+ e, Toast.LENGTH_SHORT).show(); 
+            } 
+ 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * Atualiza reg 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">atualiza(Activity activity, String tabela, String conta, String categoria, String valor, String parcela, 
+                         String dia, String mes, String ano, String situacao, String id, String tipo) { 
+        </span><span class="s2">// Log.i(&quot;aviso&quot;, &quot;atz&quot;);</span><span class="s1"> 
+        </span><span class="s0">try </span><span class="s1">{ 
+            String texto = ID + </span><span class="s3">&quot; = &quot; </span><span class="s1">+ id; 
+            AbreBanco(activity); 
+            ContentValues contentValuesCampos = </span><span class="s0">new </span><span class="s1">ContentValues(); 
+            contentValuesCampos.put(CONTA, conta); 
+            contentValuesCampos.put(CATEGORIA, categoria); 
+            contentValuesCampos.put(VALOR, valor); 
+            contentValuesCampos.put(PARCELA, parcela); 
+            contentValuesCampos.put(ANO, ano); 
+            contentValuesCampos.put(DIA, dia); 
+            contentValuesCampos.put(MES, mes); 
+            contentValuesCampos.put(SITUACAO, situacao); 
+            contentValuesCampos.put(TIPO, tipo); 
+            bancoDados.update(tabela, contentValuesCampos, texto, </span><span class="s0">null</span><span class="s1">); 
+            FechaBanco(); 
+ 
+        } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+ 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     * 
+     * deleta 
+     * 
+     */</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">delete(Activity activity, String tabela, </span><span class="s0">int </span><span class="s1">id, String tipo) { 
+        </span><span class="s0">try </span><span class="s1">{ 
+            String texto = ID + </span><span class="s3">&quot; = &quot; </span><span class="s1">+ id; 
+            AbreBanco(activity); 
+            bancoDados.delete(tabela, texto, </span><span class="s0">null</span><span class="s1">); 
+            FechaBanco(); 
+            carregaDados(activity, tipo, </span><span class="s3">&quot;nao&quot;</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+ 
+            </span><span class="s0">int </span><span class="s1">dia = RetornaDia(); 
+            </span><span class="s0">int </span><span class="s1">mes = RetornaMes(); 
+            </span><span class="s0">int </span><span class="s1">ano = RetornaAno(); 
+ 
+            SomaExibe(activity, mes + </span><span class="s3">&quot;&quot;</span><span class="s1">, ano + </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+        } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+            </span><span class="s2">// Log.i(&quot;aviso&quot;, &quot;erro &quot; + e);</span><span class="s1"> 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * TODO Verifica a query e exibe o retorno na tela 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">private boolean </span><span class="s1">VerificaRegistro(Activity activity, String tipo, String cartaoSimOuNao, String vMes, String vAno) { 
+        </span><span class="s0">int </span><span class="s1">mes = </span><span class="s4">0</span><span class="s1">, ano = </span><span class="s4">0</span><span class="s1">; 
+        </span><span class="s0">try </span><span class="s1">{ 
+            </span><span class="s0">if </span><span class="s1">(vMes == </span><span class="s3">&quot;&quot;</span><span class="s1">) { 
+ 
+                mes = RetornaMes(); 
+                ano = RetornaAno(); 
+            } 
+            </span><span class="s0">if </span><span class="s1">(vMes != </span><span class="s3">&quot;&quot;</span><span class="s1">) { 
+                mes = Integer.parseInt(vMes); 
+                ano = Integer.parseInt(vAno); 
+            } 
+            AbreBanco(activity); 
+ 
+            </span><span class="s0">if </span><span class="s1">(cartaoSimOuNao == </span><span class="s3">&quot;sim&quot;</span><span class="s1">) { 
+                cursor = bancoDados.query( 
+                        NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, MES + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ ANO + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ TIPO 
+                                + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ tipo + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ CATEGORIA + </span><span class="s3">&quot;='Cartao'&quot;</span><span class="s1">, 
+                        </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, SITUACAO + </span><span class="s3">&quot; ASC, &quot; </span><span class="s1">+ DIA + </span><span class="s3">&quot; ASC&quot;</span><span class="s1">); 
+            } 
+ 
+            </span><span class="s0">if </span><span class="s1">(cartaoSimOuNao == </span><span class="s3">&quot;nao&quot;</span><span class="s1">) { 
+                cursor = bancoDados.query( 
+                        NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, MES + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ ANO + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ TIPO 
+                                + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ tipo + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ CATEGORIA + </span><span class="s3">&quot;!='Cartao'&quot;</span><span class="s1">, 
+                        </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, SITUACAO + </span><span class="s3">&quot; ASC, &quot; </span><span class="s1">+ DIA + </span><span class="s3">&quot; ASC&quot;</span><span class="s1">); 
+            } 
+ 
+            </span><span class="s0">if </span><span class="s1">(cursor.getCount() != </span><span class="s4">0</span><span class="s1">) </span><span class="s2">// se existir registro</span><span class="s1"> 
+            { 
+                cursor.moveToFirst(); </span><span class="s2">// movimenta para o 1º registro</span><span class="s1"> 
+                </span><span class="s0">return true</span><span class="s1">; 
+            } </span><span class="s0">else</span><span class="s1"> 
+                </span><span class="s0">return false</span><span class="s1">; 
+ 
+        } </span><span class="s0">catch </span><span class="s1">(Exception er) { 
+            </span><span class="s0">return false</span><span class="s1">; 
+        } </span><span class="s0">finally </span><span class="s1">{ 
+            FechaBanco(); 
+        } 
+ 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * TODO Carrega os dados para o listview com base no mes e ano consultado. * 
+     */</span><span class="s1"> 
+ 
+    @SuppressWarnings(</span><span class="s3">&quot;deprecation&quot;</span><span class="s1">) 
+    </span><span class="s0">public void </span><span class="s1">carregaDados(Activity activity, String tipo, String cartaoSimOuNao, String mes, String ano) { 
+ 
+        ListView MostraDados = (ListView) activity.findViewById(R.id.lvListagem); 
+        </span><span class="s0">if </span><span class="s1">(VerificaRegistro(activity, tipo, cartaoSimOuNao, mes, ano)) { 
+            SimpleCursorAdapter adapterLista = </span><span class="s0">new </span><span class="s1">SimpleCursorAdapter(activity, R.layout.tela_listagem_itens, cursor, 
+                    </span><span class="s0">new </span><span class="s1">String[]{ID, CONTA, VALOR, SITUACAO, CATEGORIA, PARCELA, DIA, MES, ANO}, 
+                    </span><span class="s0">new int</span><span class="s1">[]{R.id.tvId, R.id.tvConta, R.id.tvValor, R.id.tvPago, R.id.tvCategoria, R.id.tvParcel, 
+                            R.id.tvDia, R.id.tvMes, R.id.tvAno}); 
+            MostraDados.setAdapter(adapterLista); </span><span class="s2">// executa a ação</span><span class="s1"> 
+ 
+        } </span><span class="s0">else </span><span class="s1">{ 
+            MostraDados.setAdapter(</span><span class="s0">null</span><span class="s1">); 
+ 
+        } 
+ 
+    } 
+ 
+    @SuppressWarnings({</span><span class="s3">&quot;unused&quot;</span><span class="s1">}) 
+    </span><span class="s0">public void </span><span class="s1">SomaExibe(Activity activity, String mes, String ano) { 
+        </span><span class="s0">try </span><span class="s1">{ 
+            String valorP = </span><span class="s0">null</span><span class="s1">, valorR = </span><span class="s0">null</span><span class="s1">, valorS = </span><span class="s0">null</span><span class="s1">, valorF = </span><span class="s0">null</span><span class="s1">, valorC = </span><span class="s0">null</span><span class="s1">; 
+            </span><span class="s0">double </span><span class="s1">totalP = </span><span class="s4">0</span><span class="s1">, totalR = </span><span class="s4">0</span><span class="s1">, totalS = </span><span class="s4">0</span><span class="s1">, totalF = </span><span class="s4">0</span><span class="s1">, totalC = </span><span class="s4">0</span><span class="s1">; 
+            AbreBanco(activity); 
+            </span><span class="s2">// Pagar</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            TextView tvRPagar = (TextView) activity.findViewById(R.id.tvPagar); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+ 
+            </span><span class="s2">// Cartao</span><span class="s1"> 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND &quot; </span><span class="s1">+ CATEGORIA + </span><span class="s3">&quot; ='Cartao' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorC = cursor.getString(cursor.getColumnIndex(VALOR)); 
+ 
+                valorC = valorC.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+ 
+                totalC += Double.parseDouble(valorC); 
+ 
+            } 
+            TextView tvCartao = (TextView) activity.findViewById(R.id.tvCartao); 
+            </span><span class="s0">try </span><span class="s1">{ 
+                tvCartao.setText(String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalC)); 
+            } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+ 
+            } 
+ 
+            </span><span class="s2">// Receber</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorR = valorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+ 
+                totalR += Double.parseDouble(valorR); 
+ 
+            } 
+            TextView tvRReceber = (TextView) activity.findViewById(R.id.tvReceber); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+ 
+            </span><span class="s2">// Falta</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' and situacao ='_'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorF = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorF = valorF.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalF += Double.parseDouble(valorF); 
+            } 
+            TextView tvRFalta = (TextView) activity.findViewById(R.id.tvFalta); 
+            tvRFalta.setText(</span><span class="s3">&quot;Falta R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalF)); 
+            totalS = totalR - totalP; 
+            TextView tvRSaldo = (TextView) activity.findViewById(R.id.tvSaldo); 
+            tvRSaldo.setText(String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalS)); 
+ 
+            FechaBanco(); 
+        } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+ 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * soma e exibe o mes a mes 
+     *  
+     */</span><span class="s1"> 
+ 
+    @SuppressWarnings({</span><span class="s3">&quot;unused&quot;</span><span class="s1">}) 
+    </span><span class="s0">public void </span><span class="s1">SomaExibeMM(Activity activity, String ano) { 
+        </span><span class="s0">try </span><span class="s1">{ 
+            String valorP = </span><span class="s0">null</span><span class="s1">, ValorR = </span><span class="s0">null</span><span class="s1">, valorS = </span><span class="s0">null</span><span class="s1">, valorF = </span><span class="s0">null</span><span class="s1">; 
+            </span><span class="s0">double </span><span class="s1">totalP = </span><span class="s4">0</span><span class="s1">, totalR = </span><span class="s4">0</span><span class="s1">, totalS = </span><span class="s4">0</span><span class="s1">, totalF = </span><span class="s4">0</span><span class="s1">; 
+            AbreBanco(activity); 
+            </span><span class="s2">// Pagar</span><span class="s1"> 
+            TextView tvRPagar; 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='1'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar1); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='2'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar2); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='3'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar3); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='4'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar4); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='5'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar5); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='6'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar6); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='7'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar7); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='8'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar8); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='9'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar9); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='10'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar10); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='11'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar11); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='12'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorP = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorP = valorP.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalP += Double.parseDouble(valorP); 
+            } 
+            tvRPagar = (TextView) activity.findViewById(R.id.tvPagar12); 
+            tvRPagar.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalP)); 
+            valorP = </span><span class="s0">null</span><span class="s1">; 
+            totalP = </span><span class="s4">0</span><span class="s1">; 
+ 
+            </span><span class="s2">// Receber</span><span class="s1"> 
+ 
+            TextView tvRReceber; 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='1'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber1); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='2'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber2); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='3'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber3); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='4'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber4); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='5'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber5); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='6'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber6); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='7'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber7); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='8'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber8); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='9'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber9); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='10'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber10); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='11'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber11); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='12'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                ValorR = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                ValorR = ValorR.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalR += Double.parseDouble(ValorR); 
+            } 
+            tvRReceber = (TextView) activity.findViewById(R.id.tvReceber12); 
+            tvRReceber.setText(</span><span class="s3">&quot;Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalR)); 
+            ValorR = </span><span class="s0">null</span><span class="s1">; 
+            totalR = </span><span class="s4">0</span><span class="s1">; 
+ 
+            FechaBanco(); 
+        } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+ 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * Dialog 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">dialog(</span><span class="s0">final </span><span class="s1">Activity activity, </span><span class="s0">final </span><span class="s1">String acao, </span><span class="s0">final </span><span class="s1">String tipo, String texto, </span><span class="s0">final </span><span class="s1">String tabela, 
+                       </span><span class="s0">final int </span><span class="s1">posicao, </span><span class="s0">final </span><span class="s1">String cartaoSimOuNao) { 
+ 
+        dialog = </span><span class="s0">new </span><span class="s1">Dialog(activity); 
+        dialog.setContentView(R.layout.cadastrar_activity); 
+        dialog.setTitle(texto); 
+ 
+        </span><span class="s0">final </span><span class="s1">TextView tvId = (TextView) dialog.findViewById(R.id.tvId); 
+        </span><span class="s0">final </span><span class="s1">EditText etConta = (EditText) dialog.findViewById(R.id.etConta); 
+        </span><span class="s0">final </span><span class="s1">EditText etValor = (EditText) dialog.findViewById(R.id.etValor); 
+        </span><span class="s0">final </span><span class="s1">EditText etParcela = (EditText) dialog.findViewById(R.id.etParcela); 
+        </span><span class="s0">final </span><span class="s1">EditText etDia = (EditText) dialog.findViewById(R.id.etDia); 
+        </span><span class="s0">final </span><span class="s1">EditText etMes = (EditText) dialog.findViewById(R.id.etMes); 
+        </span><span class="s0">final </span><span class="s1">EditText etAno = (EditText) dialog.findViewById(R.id.etAno); 
+        </span><span class="s0">final </span><span class="s1">EditText etTipo = (EditText) dialog.findViewById(R.id.etTipo); 
+        </span><span class="s0">final </span><span class="s1">EditText etCategoria = (EditText) dialog.findViewById(R.id.etCategoria); 
+        </span><span class="s0">final </span><span class="s1">Spinner spinnerTipo = (Spinner) dialog.findViewById(R.id.spTipo); 
+        </span><span class="s0">final </span><span class="s1">Spinner spinnerCategoria = (Spinner) dialog.findViewById(R.id.spCategoria); 
+ 
+        etCategoria.setVisibility(View.VISIBLE); 
+        etTipo.setVisibility(View.VISIBLE); 
+        spinnerTipo.setVisibility(View.GONE); 
+        spinnerCategoria.setVisibility(View.GONE); 
+        etDia.setText(</span><span class="s3">&quot;&quot; </span><span class="s1">+ diA); 
+        etMes.setText(</span><span class="s3">&quot;&quot; </span><span class="s1">+ meS); 
+        etAno.setText(</span><span class="s3">&quot;&quot; </span><span class="s1">+ anO); 
+ 
+        cbSituacao = (CheckBox) dialog.findViewById(R.id.cbPago); 
+        btAcaoApagar = (Button) dialog.findViewById(R.id.btApagar); 
+        btAcaoApagar.setVisibility(</span><span class="s4">1</span><span class="s1">); 
+        btAcaoApagar.setOnClickListener(</span><span class="s0">new </span><span class="s1">OnClickListener() { 
+            @Override 
+            </span><span class="s0">public void </span><span class="s1">onClick(View arg0) { 
+                delete(activity, NOME_TABELA_CONTAS, posicao, tipo); 
+                carregaDados(activity, tipo, cartaoSimOuNao, </span><span class="s3">&quot;&quot;</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+                dialog.dismiss(); 
+            } 
+        }); 
+ 
+        btAcaoDialog = (Button) dialog.findViewById(R.id.btGravar); 
+        btAcaoDialog.setOnClickListener(</span><span class="s0">new </span><span class="s1">OnClickListener() { 
+            @Override 
+            </span><span class="s0">public void </span><span class="s1">onClick(View v) { 
+                </span><span class="s0">if </span><span class="s1">(cbSituacao.isChecked()) { 
+                    txtcb = </span><span class="s3">&quot;ok&quot;</span><span class="s1">; 
+                } </span><span class="s0">else</span><span class="s1"> 
+                    txtcb = </span><span class="s3">&quot;_&quot;</span><span class="s1">; 
+                atualiza(activity, NOME_TABELA_CONTAS, etConta.getText().toString(), etCategoria.getText().toString(), 
+                        etValor.getText().toString(), etParcela.getText().toString(), etDia.getText().toString(), 
+                        etMes.getText().toString(), etAno.getText().toString(), txtcb, tvId.getText().toString(), tipo); 
+                dialog.cancel(); 
+ 
+                carregaDados(activity, tipo, cartaoSimOuNao, </span><span class="s3">&quot;&quot;</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+                SomaExibe(activity, meS + </span><span class="s3">&quot;&quot;</span><span class="s1">, anO + </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+            } 
+        }); 
+ 
+        </span><span class="s0">if </span><span class="s1">(acao == </span><span class="s3">&quot;atz&quot;</span><span class="s1">) { 
+            btAcaoDialog.setText(</span><span class="s3">&quot;Atualz&quot;</span><span class="s1">); 
+ 
+        } 
+        dialog.show(); 
+ 
+        enviaDadosDialog(activity, NOME_TABELA_CONTAS, posicao); 
+ 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * envia dialog 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">enviaDadosDialog(Activity activity, String tabela, </span><span class="s0">int </span><span class="s1">Posicao) { 
+        </span><span class="s0">try </span><span class="s1">{ 
+            AbreBanco(activity); 
+            cursor = bancoDados.query(tabela, </span><span class="s0">null</span><span class="s1">, ID + </span><span class="s3">&quot;=&quot; </span><span class="s1">+ Posicao, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s2">// sql(tabela, ID+&quot;=&quot;+Posicao,tipo);</span><span class="s1"> 
+            </span><span class="s0">final </span><span class="s1">EditText etConta = (EditText) dialog.findViewById(R.id.etConta); 
+            </span><span class="s0">final </span><span class="s1">EditText etCategoria = (EditText) dialog.findViewById(R.id.etCategoria); 
+            </span><span class="s0">final </span><span class="s1">EditText etValor = (EditText) dialog.findViewById(R.id.etValor); 
+            </span><span class="s0">final </span><span class="s1">EditText etParcela = (EditText) dialog.findViewById(R.id.etParcela); 
+            </span><span class="s0">final </span><span class="s1">EditText etDia = (EditText) dialog.findViewById(R.id.etDia); 
+            </span><span class="s0">final </span><span class="s1">EditText etMes = (EditText) dialog.findViewById(R.id.etMes); 
+            </span><span class="s0">final </span><span class="s1">EditText etAno = (EditText) dialog.findViewById(R.id.etAno); 
+            </span><span class="s0">final </span><span class="s1">TextView tvId = (TextView) dialog.findViewById(R.id.tvId); 
+            </span><span class="s0">final </span><span class="s1">CheckBox cbPago = (CheckBox) dialog.findViewById(R.id.cbPago); 
+            </span><span class="s0">final </span><span class="s1">EditText etTipo = (EditText) dialog.findViewById(R.id.etTipo); 
+ 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                etConta.setText(cursor.getString(cursor.getColumnIndex(CONTA))); 
+                etValor.setText(cursor.getString(cursor.getColumnIndex(VALOR))); 
+                etParcela.setText(cursor.getString(cursor.getColumnIndex(PARCELA))); 
+                etDia.setText(cursor.getString(cursor.getColumnIndex(DIA))); 
+                etMes.setText(cursor.getString(cursor.getColumnIndex(MES))); 
+                etAno.setText(cursor.getString(cursor.getColumnIndex(ANO))); 
+                tvId.setText(cursor.getString(cursor.getColumnIndex(ID))); 
+                etTipo.setText(cursor.getString(cursor.getColumnIndex(TIPO))); 
+                etCategoria.setText(cursor.getString(cursor.getColumnIndex(CATEGORIA))); 
+                </span><span class="s0">if </span><span class="s1">(cursor.getString(cursor.getColumnIndex(SITUACAO)) == </span><span class="s3">&quot;ok&quot;</span><span class="s1">) { 
+                    cbPago.setChecked(</span><span class="s0">true</span><span class="s1">); 
+                } 
+            } 
+ 
+            FechaBanco(); 
+ 
+        } </span><span class="s0">catch </span><span class="s1">(Exception er) { 
+ 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * TODO FIM 
+     *  
+     */</span><span class="s1"> 
+ 
+    @SuppressWarnings(</span><span class="s3">&quot;unused&quot;</span><span class="s1">) 
+    </span><span class="s0">private void </span><span class="s1">createAndShowAlertDialog(</span><span class="s0">final </span><span class="s1">Activity activity, </span><span class="s0">final int </span><span class="s1">pos) { 
+        AlertDialog.Builder builder = </span><span class="s0">new </span><span class="s1">AlertDialog.Builder(</span><span class="s0">this</span><span class="s1">); 
+        builder.setTitle(</span><span class="s3">&quot;Atenção: Deseja excluir o registro??&quot;</span><span class="s1">); 
+        builder.setPositiveButton(</span><span class="s3">&quot;Excluir&quot;</span><span class="s1">, </span><span class="s0">new </span><span class="s1">DialogInterface.OnClickListener() { 
+            </span><span class="s0">public void </span><span class="s1">onClick(DialogInterface dialog, </span><span class="s0">int </span><span class="s1">id) { 
+                </span><span class="s2">// TODO</span><span class="s1"> 
+                delete(activity, NOME_TABELA_CONTAS, pos, </span><span class="s3">&quot;Receber&quot;</span><span class="s1">); 
+                dialog.dismiss(); 
+ 
+            } 
+        }); 
+        builder.setNegativeButton(</span><span class="s3">&quot;Cancelar&quot;</span><span class="s1">, </span><span class="s0">new </span><span class="s1">DialogInterface.OnClickListener() { 
+            </span><span class="s0">public void </span><span class="s1">onClick(DialogInterface dialog, </span><span class="s0">int </span><span class="s1">id) { 
+                </span><span class="s2">// TODO</span><span class="s1"> 
+                dialog.dismiss(); 
+            } 
+        }); 
+        AlertDialog dialog = builder.create(); 
+        dialog.show(); 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     *      
+     */</span><span class="s1"> 
+ 
+    @SuppressWarnings(</span><span class="s3">&quot;resource&quot;</span><span class="s1">) 
+    </span><span class="s0">public void </span><span class="s1">importarLista(Activity activity) { 
+        File sdcard = Environment.getExternalStorageDirectory(); 
+        File file = </span><span class="s0">new </span><span class="s1">File(sdcard, </span><span class="s3">&quot;/Download/bancoContas.txt&quot;</span><span class="s1">); 
+        AbreBanco(activity); 
+        </span><span class="s0">try </span><span class="s1">{ 
+            BufferedReader br = </span><span class="s0">new </span><span class="s1">BufferedReader(</span><span class="s0">new </span><span class="s1">FileReader(file)); 
+            String line; 
+            </span><span class="s0">while </span><span class="s1">((line = br.readLine()) != </span><span class="s0">null</span><span class="s1">) { 
+                </span><span class="s2">// Log.i(&quot;sql&quot;, &quot;&quot; + line);</span><span class="s1"> 
+                String sql = line; 
+                bancoDados.execSQL(sql); 
+            } 
+            Toast.makeText(activity, </span><span class="s3">&quot;Dados importados com sucesso! &quot;</span><span class="s1">, Toast.LENGTH_SHORT).show(); 
+        } </span><span class="s0">catch </span><span class="s1">(IOException e) { 
+            Toast.makeText(activity, </span><span class="s3">&quot;Erro ao importar! &quot; </span><span class="s1">+ e, Toast.LENGTH_SHORT).show(); 
+        } 
+        FechaBanco(); 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">CriaListaParaExporacao(Activity activity) { 
+        @SuppressWarnings(</span><span class="s3">&quot;unused&quot;</span><span class="s1">) 
+        </span><span class="s0">int </span><span class="s1">contagem = </span><span class="s4">0</span><span class="s1">; 
+        AbreBanco(activity); 
+        Cursor cc = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+ 
+        </span><span class="s0">while </span><span class="s1">(cc.moveToNext()) { 
+            Valores += </span><span class="s3">&quot;INSERT INTO Contas (conta,valor,parcela,ano,mes,dia,situacao,tipo,categoria) VALUES ('&quot;</span><span class="s1">; 
+            Valores += cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;conta&quot;</span><span class="s1">)) + </span><span class="s3">&quot;','&quot;</span><span class="s1"> 
+                    + cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;valor&quot;</span><span class="s1">)).toString() + </span><span class="s3">&quot;','&quot;</span><span class="s1"> 
+                    + cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;parcela&quot;</span><span class="s1">)).toString() + </span><span class="s3">&quot;','&quot;</span><span class="s1"> 
+                    + cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;ano&quot;</span><span class="s1">)).toString() + </span><span class="s3">&quot;','&quot;</span><span class="s1"> 
+                    + cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;mes&quot;</span><span class="s1">)).toString() + </span><span class="s3">&quot;',&quot;</span><span class="s1"> 
+                    + cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;dia&quot;</span><span class="s1">)).toString() + </span><span class="s3">&quot;,'&quot;</span><span class="s1"> 
+                    + cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;situacao&quot;</span><span class="s1">)) + </span><span class="s3">&quot;','&quot; </span><span class="s1">+ cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;tipo&quot;</span><span class="s1">)) 
+                    + </span><span class="s3">&quot;','&quot; </span><span class="s1">+ cc.getString(cc.getColumnIndex(</span><span class="s3">&quot;categoria&quot;</span><span class="s1">)) + </span><span class="s3">&quot;'),; </span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">; 
+ 
+            contagem++; 
+        } 
+ 
+        Valores = Valores.replaceAll(</span><span class="s3">&quot;,;&quot;</span><span class="s1">, </span><span class="s3">&quot;;&quot;</span><span class="s1">); 
+ 
+        SalvarArquivo(Valores, activity); 
+        cc.close(); 
+        Toast.makeText(activity, </span><span class="s3">&quot;Exportação dos dados realizada com sucesso!&quot;</span><span class="s1">, Toast.LENGTH_SHORT).show(); 
+        FechaBanco(); 
+    } 
+ 
+    </span><span class="s0">private void </span><span class="s1">SalvarArquivo(String valor, Activity activity) { 
+ 
+        File arq; 
+        FileOutputStream fos; 
+        </span><span class="s0">byte</span><span class="s1">[] dados; 
+        </span><span class="s0">try </span><span class="s1">{ 
+            arq = </span><span class="s0">new </span><span class="s1">File(Environment.getExternalStorageDirectory(), </span><span class="s3">&quot;/Download/bancoContas.txt&quot;</span><span class="s1">); 
+            fos = </span><span class="s0">new </span><span class="s1">FileOutputStream(arq.toString()); 
+ 
+            dados = valor.getBytes(); 
+ 
+            fos.write(dados); 
+            fos.flush(); 
+            fos.close(); 
+            enviarEmail(activity); 
+        } </span><span class="s0">catch </span><span class="s1">(IOException e) { 
+            Toast.makeText(activity, </span><span class="s3">&quot;Exportação com erro! &quot; </span><span class="s1">+ e, Toast.LENGTH_SHORT).show(); 
+ 
+        } 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">enviarEmail(Activity activity) { 
+        String subject = </span><span class="s3">&quot;Controle de Contas - backup&quot;</span><span class="s1">; 
+        String message = </span><span class="s3">&quot;Segue em anexo um backup dos dados &quot;</span><span class="s1">; 
+ 
+        Uri uri = Uri.fromFile(</span><span class="s0">new </span><span class="s1">File(Environment.getExternalStorageDirectory(), </span><span class="s3">&quot;/Download/bancoContas.txt&quot;</span><span class="s1">)); 
+ 
+        Intent i = </span><span class="s0">new </span><span class="s1">Intent(Intent.ACTION_SEND); 
+        i.putExtra(Intent.EXTRA_SUBJECT, subject); 
+        i.putExtra(Intent.EXTRA_TEXT, message); 
+        i.putExtra(Intent.EXTRA_STREAM, uri); 
+        i.setType(</span><span class="s3">&quot;text/plain&quot;</span><span class="s1">); 
+        activity.startActivity(Intent.createChooser(i, </span><span class="s3">&quot;Send mail&quot;</span><span class="s1">)); 
+ 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">deletar(Activity activity) { 
+        AbreBanco(activity); 
+        </span><span class="s0">try </span><span class="s1">{ 
+            bancoDados.delete(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            Toast.makeText(activity, </span><span class="s3">&quot;Dados apagados com sucesso&quot;</span><span class="s1">, Toast.LENGTH_SHORT).show(); 
+        } </span><span class="s0">catch </span><span class="s1">(Exception er) { 
+            Toast.makeText(activity, </span><span class="s3">&quot;Erro! &quot; </span><span class="s1">+ er, Toast.LENGTH_SHORT).show(); 
+        } 
+        FechaBanco(); 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * Pagar contas cartao do mes selecionado 
+     *  
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">pagarCartao(Activity activity, String mes, String ano, String acao) { 
+ 
+        </span><span class="s0">try </span><span class="s1">{ 
+            String texto = CATEGORIA + </span><span class="s3">&quot; = 'Cartao' AND &quot; </span><span class="s1">+ MES + </span><span class="s3">&quot;='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' AND &quot; </span><span class="s1">+ ANO + </span><span class="s3">&quot;= '&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;'&quot;</span><span class="s1">; 
+            AbreBanco(activity); 
+            ContentValues contentValuesCampos = </span><span class="s0">new </span><span class="s1">ContentValues(); 
+            contentValuesCampos.put(SITUACAO, acao); 
+ 
+            bancoDados.update(NOME_TABELA_CONTAS, contentValuesCampos, texto, </span><span class="s0">null</span><span class="s1">); 
+            FechaBanco(); 
+            carregaDados(activity, </span><span class="s3">&quot;Pagar&quot;</span><span class="s1">, </span><span class="s3">&quot;sim&quot;</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+            SomaExibe(activity, meS + </span><span class="s3">&quot;&quot;</span><span class="s1">, anO + </span><span class="s3">&quot;&quot;</span><span class="s1">); 
+ 
+        } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+ 
+        } 
+ 
+    } 
+ 
+    </span><span class="s0">public void </span><span class="s1">escondeTeclado() { 
+        View view = </span><span class="s0">this</span><span class="s1">.getCurrentFocus(); 
+        </span><span class="s0">if </span><span class="s1">(view != </span><span class="s0">null</span><span class="s1">) { 
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE); 
+            imm.hideSoftInputFromWindow(view.getWindowToken(), </span><span class="s4">0</span><span class="s1">); 
+        } 
+    } 
+ 
+    </span><span class="s2">/* 
+     *  
+     * TODO faz a soma dos valores a pagar/receber/saldo/falta pagar e retorna 
+     * no metodo verificaregistro() 
+     *  
+     */</span><span class="s1"> 
+ 
+    </span><span class="s0">public void </span><span class="s1">SomaExibeMainActivity(Activity activity, String mes, String ano) { 
+        </span><span class="s0">try </span><span class="s1">{ 
+            String valorPagar = </span><span class="s0">null</span><span class="s1">, valorPagarMeu = </span><span class="s0">null</span><span class="s1">, valorReceber = </span><span class="s0">null</span><span class="s1">, valorFalta = </span><span class="s0">null</span><span class="s1">, 
+                    valorFaltaMeu = </span><span class="s0">null</span><span class="s1">, valorCartao = </span><span class="s0">null</span><span class="s1">, valorPatty = </span><span class="s0">null</span><span class="s1">, valorMae = </span><span class="s0">null</span><span class="s1">, valorLazer = </span><span class="s0">null</span><span class="s1">, 
+                    valorChris = </span><span class="s0">null</span><span class="s1">, valorate20 = </span><span class="s0">null</span><span class="s1">, valordepois20 = </span><span class="s0">null</span><span class="s1">; 
+            </span><span class="s0">double </span><span class="s1">totalPagar = </span><span class="s4">0</span><span class="s1">, totalPagarMeu = </span><span class="s4">0</span><span class="s1">, totalReceber = </span><span class="s4">0</span><span class="s1">, totalSaldo = </span><span class="s4">0</span><span class="s1">, totalFalta = </span><span class="s4">0</span><span class="s1">, 
+                    totalFaltaMeu = </span><span class="s4">0</span><span class="s1">, totalCartao = </span><span class="s4">0</span><span class="s1">, totalPatty = </span><span class="s4">0</span><span class="s1">, totalMae = </span><span class="s4">0</span><span class="s1">, totalLazer = </span><span class="s4">0</span><span class="s1">, totalChris = </span><span class="s4">0</span><span class="s1">, 
+                    totalate20 = </span><span class="s4">0</span><span class="s1">, totaldepois20 = </span><span class="s4">0</span><span class="s1">; 
+            AbreBanco(activity); 
+ 
+            </span><span class="s2">// até dia 15</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Patty' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Mae' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Chris' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Mae%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Patty%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Chris%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND dia &lt; 21 &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;and situacao ='_'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorate20 = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorate20 = valorate20.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); 
+                totalate20 += Double.parseDouble(valorate20); 
+            } 
+            TextView tvAte20 = (TextView) activity.findViewById(R.id.tvtotalantes20); 
+            tvAte20.setText(</span><span class="s3">&quot;Antes 20 R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalate20)); 
+ 
+            </span><span class="s2">// depois dia 20</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Patty' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Mae' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Chris' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Mae%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Patty%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Chris%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND dia &gt; 20 &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND situacao='_'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valordepois20 = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valordepois20 = valordepois20.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); 
+                totaldepois20 += Double.parseDouble(valordepois20); 
+            } 
+            TextView tvdepois20 = (TextView) activity.findViewById(R.id.tvtotaldepois20); 
+            tvdepois20.setText(</span><span class="s3">&quot;Depois 20 R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totaldepois20)); 
+ 
+            </span><span class="s2">// Pagar</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorPagar = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorPagar = valorPagar.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalPagar += Double.parseDouble(valorPagar); 
+            } 
+            TextView tvRPagar = (TextView) activity.findViewById(R.id.tvPagar); 
+            tvRPagar.setText(</span><span class="s3">&quot;Total a Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalPagar)); 
+ 
+            </span><span class="s2">// Pagar meu</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Patty' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Mae' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND categoria != 'Chris' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Mae%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Patty%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND conta not like 'Chris%' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;AND dia &gt; 20 &quot; </span><span class="s1">+ 
+                            </span><span class="s3">&quot;and situacao ='_'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorPagarMeu = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorPagarMeu = valorPagarMeu.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a ,</span><span class="s1"> 
+                </span><span class="s2">// por .</span><span class="s1"> 
+                totalPagarMeu += Double.parseDouble(valorPagarMeu); 
+            } 
+            TextView tvRPagarMeu = (TextView) activity.findViewById(R.id.tvPagarMeu); 
+            tvRPagarMeu.setText(</span><span class="s3">&quot;Pagar R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalPagarMeu)); 
+ 
+            </span><span class="s2">// Cartao</span><span class="s1"> 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND &quot; </span><span class="s1">+ CATEGORIA + </span><span class="s3">&quot; ='Cartao' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorCartao = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorCartao = valorCartao.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por</span><span class="s1"> 
+                totalCartao += Double.parseDouble(valorCartao); 
+            } 
+            TextView tvCartao = (TextView) activity.findViewById(R.id.tvCartao); 
+            </span><span class="s0">try </span><span class="s1">{ 
+                tvCartao.setText(</span><span class="s3">&quot;Cartao R$ &quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalCartao)); 
+            } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+ 
+            } 
+            </span><span class="s0">if </span><span class="s1">(totalCartao == </span><span class="s4">0</span><span class="s1">) { 
+                tvCartao.setVisibility(View.GONE); 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                tvCartao.setVisibility(View.VISIBLE); 
+            } 
+ 
+            </span><span class="s2">// Receber</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Receber' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorReceber = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorReceber = valorReceber.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a ,</span><span class="s1"> 
+                totalReceber += Double.parseDouble(valorReceber); 
+            } 
+            TextView tvRReceber = (TextView) activity.findViewById(R.id.tvReceber); 
+            tvRReceber.setText(</span><span class="s3">&quot;Total a Receber R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalReceber)); 
+ 
+            </span><span class="s2">// Falta</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' and situacao ='_'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorFalta = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorFalta = valorFalta.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalFalta += Double.parseDouble(valorFalta); 
+            } 
+            TextView tvRFalta = (TextView) activity.findViewById(R.id.tvFalta); 
+            tvRFalta.setText(</span><span class="s3">&quot;Falta Pagar Total R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalFalta)); 
+ 
+            </span><span class="s2">// Falta meu</span><span class="s1"> 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND categoria != 'Patty' AND categoria != 'Mae' AND categoria != 'Chris' AND conta not like 'Mae%'&quot;</span><span class="s1"> 
+                            + </span><span class="s3">&quot; AND conta not like 'Patty%' AND conta not like 'Chris%' AND ano ='&quot; </span><span class="s1">+ ano 
+                            + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;' and situacao ='_'&quot;</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+ 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorFaltaMeu = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorFaltaMeu = valorFaltaMeu.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a ,</span><span class="s1"> 
+                </span><span class="s2">// por .</span><span class="s1"> 
+                totalFaltaMeu += Double.parseDouble(valorFaltaMeu); 
+            } 
+            TextView tvRFaltaMeu = (TextView) activity.findViewById(R.id.tvFaltaMeu); 
+            tvRFaltaMeu.setText(</span><span class="s3">&quot;Falta R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalFaltaMeu)); 
+ 
+            </span><span class="s2">// patty</span><span class="s1"> 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND categoria='Patty' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorPatty = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorPatty = valorPatty.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalPatty += Double.parseDouble(valorPatty); 
+            } 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND conta LIKE 'Patty%' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorPatty = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorPatty = valorPatty.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalPatty += Double.parseDouble(valorPatty); 
+            } 
+            TextView tvPatty = (TextView) activity.findViewById(R.id.tvPatty); 
+            tvPatty.setText(</span><span class="s3">&quot;Patty R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalPatty)); 
+            </span><span class="s0">if </span><span class="s1">(totalPatty == </span><span class="s4">0</span><span class="s1">) { 
+                tvPatty.setVisibility(View.GONE); 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                tvPatty.setVisibility(View.VISIBLE); 
+            } 
+ 
+            </span><span class="s2">// mae</span><span class="s1"> 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND categoria='Mae' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorMae = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorMae = valorMae.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalMae += Double.parseDouble(valorMae); 
+            } 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND conta LIKE 'Mae%' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorMae = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorMae = valorMae.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalMae += Double.parseDouble(valorMae); 
+            } 
+            TextView tvMae = (TextView) activity.findViewById(R.id.tvMae); 
+            tvMae.setText(</span><span class="s3">&quot;Mae R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalMae)); 
+            </span><span class="s0">if </span><span class="s1">(totalMae == </span><span class="s4">0</span><span class="s1">) { 
+                tvMae.setVisibility(View.GONE); 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                tvMae.setVisibility(View.VISIBLE); 
+            } 
+            </span><span class="s2">// bobeira</span><span class="s1"> 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND categoria = 'Outros' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorLazer = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorLazer = valorLazer.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalLazer += Double.parseDouble(valorLazer); 
+            } 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND categoria = 'Lazer' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorLazer = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorLazer = valorLazer.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalLazer += Double.parseDouble(valorLazer); 
+            } 
+ 
+            TextView tvbobeira = (TextView) activity.findViewById(R.id.tvBobeira); 
+            tvbobeira.setText(</span><span class="s3">&quot;Bobeira R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalLazer)); 
+            </span><span class="s0">if </span><span class="s1">(totalLazer == </span><span class="s4">0</span><span class="s1">) { 
+                tvbobeira.setVisibility(View.GONE); 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                tvbobeira.setVisibility(View.VISIBLE); 
+            } 
+            </span><span class="s2">// Chris</span><span class="s1"> 
+ 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND categoria = 'Chris' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorChris = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorChris = valorChris.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalChris += Double.parseDouble(valorChris); 
+            } 
+            cursor = bancoDados.query(NOME_TABELA_CONTAS, </span><span class="s0">null</span><span class="s1">, 
+                    TIPO + </span><span class="s3">&quot;='Pagar' AND conta like 'Chris%' AND ano ='&quot; </span><span class="s1">+ ano + </span><span class="s3">&quot;' and mes='&quot; </span><span class="s1">+ mes + </span><span class="s3">&quot;'&quot;</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">, 
+                    </span><span class="s0">null</span><span class="s1">, </span><span class="s0">null</span><span class="s1">); 
+            </span><span class="s0">while </span><span class="s1">(cursor.moveToNext()) { 
+                valorChris = cursor.getString(cursor.getColumnIndex(VALOR)); 
+                valorChris = valorChris.replaceAll(</span><span class="s3">&quot;,&quot;</span><span class="s1">, </span><span class="s3">&quot;.&quot;</span><span class="s1">); </span><span class="s2">// troca a , por .</span><span class="s1"> 
+                totalChris += Double.parseDouble(valorChris); 
+            } 
+ 
+            TextView tvChris = (TextView) activity.findViewById(R.id.tvChris); 
+            tvChris.setText(</span><span class="s3">&quot;Chris R$&quot; </span><span class="s1">+ String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalChris)); 
+            </span><span class="s0">if </span><span class="s1">(totalChris == </span><span class="s4">0</span><span class="s1">) { 
+                tvChris.setVisibility(View.GONE); 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                tvbobeira.setVisibility(View.VISIBLE); 
+            } 
+ 
+            </span><span class="s2">// saldo</span><span class="s1"> 
+            totalSaldo = totalReceber - totalPagar; 
+ 
+            TextView tvRSaldo = (TextView) activity.findViewById(R.id.tvSaldo); 
+            tvRSaldo.setText(String.format(</span><span class="s3">&quot;%.2f&quot;</span><span class="s1">, totalSaldo)); 
+ 
+            FechaBanco(); 
+        } </span><span class="s0">catch </span><span class="s1">(Exception e) { 
+            </span><span class="s2">// Log.i(&quot;aviso&quot;, &quot;erro: &quot; + e);</span><span class="s1"> 
+        } 
+    } 
+ 
+    </span><span class="s0">public int </span><span class="s1">RetornaDia() { 
+        </span><span class="s0">int </span><span class="s1">valor = </span><span class="s4">0</span><span class="s1">; 
+        Calendar _calendar = Calendar.getInstance(Locale.getDefault()); 
+        </span><span class="s0">return </span><span class="s1">valor = _calendar.get(Calendar.DAY_OF_MONTH); 
+    } 
+ 
+    </span><span class="s0">public int </span><span class="s1">RetornaMes() { 
+        </span><span class="s0">int </span><span class="s1">valor = </span><span class="s4">0</span><span class="s1">; 
+        Calendar _calendar = Calendar.getInstance(Locale.getDefault()); 
+        </span><span class="s0">return </span><span class="s1">valor = _calendar.get(Calendar.MONTH) + </span><span class="s4">1</span><span class="s1">; 
+    } 
+ 
+    </span><span class="s0">public int </span><span class="s1">RetornaAno() { 
+        </span><span class="s0">int </span><span class="s1">valor = </span><span class="s4">0</span><span class="s1">; 
+        Calendar _calendar = Calendar.getInstance(Locale.getDefault()); 
+        </span><span class="s0">return </span><span class="s1">valor = _calendar.get(Calendar.YEAR); 
+    } 
+} 
+</span></pre>
+</body>
+</html>

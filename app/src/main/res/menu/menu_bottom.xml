@@ -1,0 +1,33 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.chriscoliveira.contas2017.MainActivity" >
+
+    <item
+        android:id="@+id/action_export_email"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_share_black_24dp"
+        app:showAsAction="always"
+        android:title="Exportar Banco"/>
+    
+    
+    <item
+        android:id="@+id/action_resumo"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_resumo"
+        app:showAsAction="always"
+        android:title="Resumo"/>
+    
+    <item
+        android:id="@+id/action_novo"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_add_circle_outline_black_24dp"
+        app:showAsAction="always"
+        android:title="Cadastrar Novo"/>
+    
+   
+    
+    
+   
+
+</menu>

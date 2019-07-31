@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.chriscoliveira.contas"
+    android:versionCode="1"
+    android:versionName="1.7">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ico"
+        android:label="Contas"
+        android:theme="@style/Theme.MyTheme">
+
+        <activity
+            android:name=".login.LoginActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".Exportar"/>
+        <activity android:name=".login.CadastroActivity"/>
+
+        <activity
+            android:name=".renda.RendaActivity"
+            android:label="Receber"
+            android:theme="@style/Theme.Rendas" />
+        <activity
+            android:name=".despesa.DespesaActivity"
+            android:label="Pagar"
+            android:theme="@style/Theme.Despesas" />
+        <activity
+            android:name=".cartoes.CartaoItauActivity"
+            android:label="Itau"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cadastro.CadastroActivity"
+            android:theme="@style/Theme.Cadastrar" />
+        <activity
+            android:name=".cartoes.CartaoHomeActivity"
+
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoNubankActivity"
+            android:label="Nubank"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoBradescoActivity"
+            android:label="Bradesco"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoCaixaActivity"
+            android:label="Caixa"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoCeaActivity"
+            android:label="CeA"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoMarisaActivity"
+            android:label="Marisa"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoRiachueloActivity"
+            android:label="Riachuelo"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoHipercardActivity"
+            android:label="Hipercard"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".cartoes.CartaoPernambucanasActivity"
+            android:label="Pernambucanas"
+            android:theme="@style/Theme.Cartao" />
+        <activity
+            android:name=".AjustesActivity"
+            android:label="Config"
+            android:theme="@style/Theme.Ajustes" />
+        <activity
+            android:name=".MesAMesActivity"
+            android:label="Resumo"
+            android:theme="@style/Theme.Ajustes" />
+
+    <provider
+        android:name="android.support.v4.content.FileProvider"
+        android:authorities="com.chriscoliveira.contas"
+        android:exported="false"
+        android:grantUriPermissions="true">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/provider_paths" />
+    </provider>
+    </application>
+</manifest>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">138057144318-h3hphs3qihlb239jrrgk73qq594ajmd1.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://minhas-contas-8dc67.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">138057144318</string>
+    <string name="google_api_key" translatable="false">AIzaSyA93QPpAc4YEPUIFHvsBVxFg0nH_SjBHCs</string>
+    <string name="google_app_id" translatable="false">1:138057144318:android:7e582940b7ecfcd4</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyA93QPpAc4YEPUIFHvsBVxFg0nH_SjBHCs</string>
+    <string name="google_storage_bucket" translatable="false">minhas-contas-8dc67.appspot.com</string>
+    <string name="project_id" translatable="false">minhas-contas-8dc67</string>
+</resources>

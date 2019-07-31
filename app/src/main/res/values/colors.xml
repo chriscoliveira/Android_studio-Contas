@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#1A237E</color>
+    <color name="colorAccent">#FF5722</color>
+
+    <color name="colorPrimary1">#F44336</color>
+    <color name="colorPrimaryDark1">#B71C1C</color>
+    <color name="colorAccent1">#536DFE</color>
+
+     <color name="colorPrimary2">#4CAF50</color>
+    <color name="colorPrimaryDark2">#004D40</color>
+    <color name="colorAccent2">#FF5722</color>
+
+    <color name="colorPrimary3">#EF6C00</color>
+    <color name="colorPrimaryDark3">#E65100</color>
+    <color name="colorAccent3">#536DFE</color>
+
+    <color name="colorPrimary4">#9E9E9E</color>
+    <color name="colorPrimaryDark4">#616161</color>
+    <color name="colorAccent4">#FF5722</color>
+
+    <color name="colorPrimary5">#795548</color>
+    <color name="colorPrimaryDark5">#5D4037</color>
+    <color name="colorAccent5">#C2E2F2</color>
+
+    <color name="colorPrimary6">#3F51B5</color>
+    <color name="colorPrimaryDark6">#1A237E</color>
+    <color name="colorAccent6">#009688</color>
+
+    <color name="Alerta">#D32F2F</color>
+    <color name="gray">#ddd</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000</color>
+
+    <color name="fundo">#D7CCC8</color>
+    <color name="fundoclaro">#e9e1df</color>
+    <color name="borda">#795548</color>
+</resources>

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "138057144318",
+    "firebase_url": "https://minhas-contas-8dc67.firebaseio.com",
+    "project_id": "minhas-contas-8dc67",
+    "storage_bucket": "minhas-contas-8dc67.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138057144318:android:7e582940b7ecfcd4",
+        "android_client_info": {
+          "package_name": "com.chriscoliveira.contas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "138057144318-fodr3jd55hlkoiull2odf39trjk9f93p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chriscoliveira.contas",
+            "certificate_hash": "caaa4bc3cd721b3afcca5a51488b6520b6dc5871"
+          }
+        },
+        {
+          "client_id": "138057144318-h3hphs3qihlb239jrrgk73qq594ajmd1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA93QPpAc4YEPUIFHvsBVxFg0nH_SjBHCs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "138057144318-h3hphs3qihlb239jrrgk73qq594ajmd1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

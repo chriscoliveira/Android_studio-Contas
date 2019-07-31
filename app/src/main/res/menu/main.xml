@@ -1,0 +1,53 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.chriscoliveira.contas.MainActivity">
+
+    <item
+        android:id="@+id/action_rendas"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_receber"
+        app:showAsAction="always"
+        android:title="Rendas"/>
+
+        <item
+        android:id="@+id/action_despesas"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_pagar"
+        
+        app:showAsAction="always"
+        android:title="Despesas"/>
+        <item
+        android:id="@+id/action_cartao"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_cartao"
+        
+        app:showAsAction="always"
+        android:title="Despesas"/>
+                
+    <item
+        android:id="@+id/action_novo"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_add_circle_outline_black_24dp"
+        app:showAsAction="always"
+        android:title="Cadastrar Novo"/>
+   <item
+        android:id="@+id/action_resumo"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_resumo"
+        app:showAsAction="ifRoom"
+        android:title="Resumo"/>    
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_settings_applications_black_24dp"
+        app:showAsAction="ifRoom"
+        android:title="Configuracoes"/>
+    <item
+        android:id="@+id/action_sair"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_exit_to_app_black_24dp"
+        app:showAsAction="ifRoom"
+        android:title="Deslogar"/>
+</menu>

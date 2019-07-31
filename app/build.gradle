@@ -1,0 +1,48 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId 'com.chriscoliveira.contas'
+        minSdkVersion 23
+        targetSdkVersion 28
+        versionCode 2
+        versionName "4"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    defaultConfig {
+        buildConfigField 'String', 'BUILD_TIME', 'new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm", java.util.Locale.ROOT).format(new java.util.Date(' + System.currentTimeMillis() + 'L))'
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:support-v4:28.0.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.google.firebase:firebase-core:11.8.0'
+    implementation 'com.google.firebase:firebase-database:11.6.2'
+    implementation 'com.google.firebase:firebase-auth:16.1.0'
+    implementation 'com.google.firebase:firebase-storage:16.0.5'
+    implementation 'com.google.android.gms:play-services-auth:16.0.0'
+    implementation 'com.google.firebase:firebase-messaging:17.6.0'
+
+    implementation 'com.github.clans:fab:1.6.4'
+    implementation 'com.prolificinteractive:material-calendarview:1.4.3'
+    implementation 'com.android.support:cardview-v7:28.0.0'
+
+    //implementation 'com.github.MikeOrtiz:TouchImageView:2.1.1'
+    implementation 'com.jsibbold:zoomage:1.2.0'
+}
+apply plugin: 'com.google.gms.google-services'
